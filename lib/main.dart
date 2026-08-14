@@ -11,37 +11,35 @@ class LoveApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'إليكِ',
+      title: 'رهف ❤️',
       theme: ThemeData(
         useMaterial3: true,
-        fontFamily: 'sans',
       ),
       home: const HomePage(),
     );
   }
 }
 
-// ======================================================
-// ألوان التطبيق
-// ======================================================
+// =====================================================
+// الألوان
+// =====================================================
 
-const Color backgroundTop = Color(0xFF180F18);
-const Color backgroundBottom = Color(0xFF3A1829);
-const Color cardColor = Color(0x33FFFFFF);
-const Color primaryPink = Color(0xFFFF7FA8);
-const Color softPink = Color(0xFFFFD6E2);
-const Color whiteSoft = Color(0xFFFDF8FA);
+const Color bg1 = Color(0xFF160C15);
+const Color bg2 = Color(0xFF3A1729);
+const Color pink = Color(0xFFFF789F);
+const Color lightPink = Color(0xFFFFD5E1);
+const Color textWhite = Color(0xFFFFF8FA);
 
-// ======================================================
-// انتقال بين الصفحات
-// ======================================================
+// =====================================================
+// الانتقال بين الصفحات
+// =====================================================
 
 void goTo(BuildContext context, Widget page) {
   Navigator.push(
     context,
     PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 700),
-      reverseTransitionDuration: const Duration(milliseconds: 500),
+      transitionDuration: const Duration(milliseconds: 650),
+      reverseTransitionDuration: const Duration(milliseconds: 450),
       pageBuilder: (_, animation, __) => page,
       transitionsBuilder: (_, animation, __, child) {
         final curved = CurvedAnimation(
@@ -64,9 +62,9 @@ void goTo(BuildContext context, Widget page) {
   );
 }
 
-// ======================================================
-// الخلفية المشتركة
-// ======================================================
+// =====================================================
+// الخلفية
+// =====================================================
 
 class LoveBackground extends StatelessWidget {
   final Widget child;
@@ -84,23 +82,23 @@ class LoveBackground extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            backgroundTop,
-            backgroundBottom,
-            Color(0xFF160B14),
+            bg1,
+            bg2,
+            Color(0xFF120910),
           ],
         ),
       ),
       child: Stack(
         children: [
           Positioned(
-            top: -100,
+            top: -90,
             right: -80,
-            child: _glow(220),
+            child: _glow(230),
           ),
           Positioned(
             bottom: -120,
             left: -100,
-            child: _glow(260),
+            child: _glow(280),
           ),
           SafeArea(child: child),
         ],
@@ -114,12 +112,12 @@ class LoveBackground extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: primaryPink.withOpacity(0.08),
+        color: pink.withOpacity(0.07),
         boxShadow: [
           BoxShadow(
-            color: primaryPink.withOpacity(0.08),
+            color: pink.withOpacity(0.08),
             blurRadius: 100,
-            spreadRadius: 40,
+            spreadRadius: 35,
           ),
         ],
       ),
@@ -127,9 +125,9 @@ class LoveBackground extends StatelessWidget {
   }
 }
 
-// ======================================================
+// =====================================================
 // الشاشة الرئيسية
-// ======================================================
+// =====================================================
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -140,40 +138,23 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fade;
-  late Animation<double> _scale;
+  late AnimationController controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
+    controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
 
-    _fade = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
-    );
-
-    _scale = Tween<double>(
-      begin: 0.75,
-      end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutBack,
-      ),
-    );
-
-    _controller.forward();
+    controller.forward();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    controller.dispose();
     super.dispose();
   }
 
@@ -185,88 +166,87 @@ class _HomePageState extends State<HomePage>
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(28),
             child: FadeTransition(
-              opacity: _fade,
-              child: ScaleTransition(
-                scale: _scale,
-                child: Column(
-                  children: [
-                    const Text(
-                      '♡',
-                      style: TextStyle(
-                        color: primaryPink,
-                        fontSize: 85,
-                        height: 1,
-                      ),
+              opacity: CurvedAnimation(
+                parent: controller,
+                curve: Curves.easeIn,
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    '♡',
+                    style: TextStyle(
+                      color: pink,
+                      fontSize: 90,
+                      height: 1,
                     ),
+                  ),
 
-                    const SizedBox(height: 20),
+                  const SizedBox(height: 15),
 
-                    const Text(
-                      'إليكِ',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: whiteSoft,
-                        fontSize: 46,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1,
-                      ),
+                  const Text(
+                    'رهف',
+                    style: TextStyle(
+                      color: textWhite,
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
 
-                    const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-                    Container(
-                      width: 55,
-                      height: 2,
-                      color: primaryPink.withOpacity(0.7),
+                  Container(
+                    width: 45,
+                    height: 2,
+                    color: pink,
+                  ),
+
+                  const SizedBox(height: 35),
+
+                  const Text(
+                    'إلى الإنسانة التي أتمنى أن تسامحني...',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: lightPink,
+                      fontSize: 20,
+                      height: 1.5,
                     ),
+                  ),
 
-                    const SizedBox(height: 35),
+                  const SizedBox(height: 25),
 
-                    const Text(
-                      'صنعتُ هذا الشيء بنفسي...',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: softPink,
-                        fontSize: 21,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  const Text(
+                    'صنعتُ هذا الشيء بنفسي.\n\n'
+                    'ليس لأغيّر قرارك،\n'
+                    'ولا لأجبرك على شيء.\n\n'
+                    'فقط لأن هناك أشياء كثيرة\n'
+                    'أريد أن أقولها لك.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 17,
+                      height: 1.8,
                     ),
+                  ),
 
-                    const SizedBox(height: 22),
+                  const SizedBox(height: 45),
 
-                    const Text(
-                      'ليس لأغيّر قرارك،\n'
-                      'ولا لأجبرك على مسامحتي.\n\n'
-                      'فقط لأن هناك أشياء كثيرة\n'
-                      'كنت أريد أن أقولها لك.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 17,
-                        height: 1.8,
-                      ),
+                  LoveButton(
+                    text: 'ابدئي قصتي  ♥',
+                    onPressed: () {
+                      goTo(context, const PageOne());
+                    },
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  const Text(
+                    'خذي وقتك... لا يوجد أي ضغط',
+                    style: TextStyle(
+                      color: Colors.white38,
+                      fontSize: 12,
                     ),
-
-                    const SizedBox(height: 45),
-
-                    LoveButton(
-                      text: 'ابدئي قصتي  ♥',
-                      onPressed: () {
-                        goTo(context, const ConfessionPage());
-                      },
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    const Text(
-                      'خذي وقتك... لا يوجد أي ضغط',
-                      style: TextStyle(
-                        color: Colors.white38,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -276,12 +256,12 @@ class _HomePageState extends State<HomePage>
   }
 }
 
-// ======================================================
+// =====================================================
 // الصفحة الأولى
-// ======================================================
+// =====================================================
 
-class ConfessionPage extends StatelessWidget {
-  const ConfessionPage({super.key});
+class PageOne extends StatelessWidget {
+  const PageOne({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -289,16 +269,19 @@ class ConfessionPage extends StatelessWidget {
       number: '01  /  04',
       title: 'أول شيء أريدك تعرفيه...',
       text:
-          'أنا عارف أنني أخطأت بحقك.\n\n'
-          'وعارف أن بعض تصرفاتي جرحتك أكثر مما كنت أتصور وقتها.\n\n'
-          'لم آتِ لأبرر أخطائي، ولا لألقي اللوم على أي شيء.\n\n'
-          'أنا فقط أريد أن أقول لك:\n\n'
-          'أنا غلطت.',
+          'رهف، آسف.\n\n'
+          'والله ندمت أنني كلمتك بالطريقة التي كلمتك بها.\n\n'
+          'الحقيقة أنني لم أتواصل معك لأني اشتقت لك، '
+          'أو لأني توقفت عن حبك.\n\n'
+          'كنت فقط أريد أن أعرف لماذا تخليتِ عني.\n\n'
+          'لكنني أدركت بعدها أن هذا لا يبرر الطريقة التي تصرفت بها، '
+          'ولا الكلام الذي ممكن يكون جرحك.\n\n'
+          'أنا غلطت، وأنا آسف.',
       buttons: [
         LoveButton(
           text: 'أريد أن أسمع باقي كلامك  ♥',
           onPressed: () {
-            goTo(context, const SecondPage());
+            goTo(context, const PageTwo());
           },
         ),
         const SizedBox(height: 14),
@@ -313,36 +296,41 @@ class ConfessionPage extends StatelessWidget {
   }
 }
 
-// ======================================================
+// =====================================================
 // الصفحة الثانية
-// ======================================================
+// =====================================================
 
-class SecondPage extends StatelessWidget {
-  const SecondPage({super.key});
+class PageTwo extends StatelessWidget {
+  const PageTwo({super.key});
 
   @override
   Widget build(BuildContext context) {
     return StoryPage(
       number: '02  /  04',
-      title: 'لو عاد بي الوقت...',
+      title: 'الأشياء التي ندمت عليها',
       text:
-          'لو عاد بي الوقت، كنت سأفكر قبل أن أتكلم.\n\n'
-          'كنت سأحاول أن أفهم شعورك بدل أن أدافع عن نفسي.\n\n'
-          'كنت سأنتبه أكثر للأشياء الصغيرة التي كانت تزعجك.\n\n'
-          'لأنني الآن فهمت أن بعض الأشياء التي كنت أراها بسيطة، '
-          'كانت تعني لك الكثير.',
+          'أعترف أنني جرحتك، وأعرف أنني أخطأت أكثر من مرة.\n\n'
+          'وأنا آسف لأنني لم أرد عليك عندما قلتِ لي شيئًا عني، '
+          'وسكتُّ بدل أن أفهمك وأتكلم معك بطريقة أفضل.\n\n'
+          'وآسف على كل مرة جرحتك فيها، '
+          'أو جعلتك تبكين، '
+          'أو نزلت من عينيك دمعة بسببي.\n\n'
+          'وآسف إذا جعلتك تشعرين يومًا أنك ندمتِ '
+          'لأنك وافقتِ أن ترتبطي بي.\n\n'
+          'أكثر شيء يؤلمني أن يكون الشخص الذي يحبك '
+          'هو نفسه سبب حزنك.',
       buttons: [
         LoveButton(
-          text: 'أكمل  ♥',
+          text: 'أريد أن أعرف ماذا تعلمت  ♥',
           onPressed: () {
-            goTo(context, const ThirdPage());
+            goTo(context, const PageThree());
           },
         ),
         const SizedBox(height: 14),
         OutlineLoveButton(
-          text: 'قل لي ماذا تعلمت',
+          text: 'أحتاج أن أفكر قليلًا',
           onPressed: () {
-            goTo(context, const LearningPage());
+            goTo(context, const PausePage());
           },
         ),
       ],
@@ -350,63 +338,37 @@ class SecondPage extends StatelessWidget {
   }
 }
 
-// ======================================================
-// ماذا تعلمت
-// ======================================================
-
-class LearningPage extends StatelessWidget {
-  const LearningPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return StoryPage(
-      title: 'ماذا تعلمت؟',
-      text:
-          'تعلمت أن كلمة "آسف" وحدها لا تكفي.\n\n'
-          'وأن الإنسان يمكن أن يحب شخصًا جدًا، '
-          'ومع ذلك يؤذيه إذا لم يعرف كيف يتصرف.\n\n'
-          'تعلمت أن الحب ليس مجرد كلام جميل.\n\n'
-          'الحب أيضًا اهتمام، وفهم، واحترام، وأفعال.',
-      buttons: [
-        LoveButton(
-          text: 'الآن فهمت...  ♥',
-          onPressed: () {
-            goTo(context, const ThirdPage());
-          },
-        ),
-      ],
-    );
-  }
-}
-
-// ======================================================
+// =====================================================
 // الصفحة الثالثة
-// ======================================================
+// =====================================================
 
-class ThirdPage extends StatelessWidget {
-  const ThirdPage({super.key});
+class PageThree extends StatelessWidget {
+  const PageThree({super.key});
 
   @override
   Widget build(BuildContext context) {
     return StoryPage(
       number: '03  /  04',
-      title: 'لن أعدك بالكمال...',
+      title: 'ماذا تعلمت؟',
       text:
-          'لا أستطيع أن أعدك أنني لن أخطئ أبدًا.\n\n'
-          'لكن أستطيع أن أعدك أنني لن أتعامل مع أخطائي وكأنها شيء عادي.\n\n'
-          'سأحاول أن أسمعك.\n'
-          'سأحاول أن أفهمك.\n'
-          'وسأحاول أن أكون الشخص الذي تستحقينه.',
+          'تعلمت شيئًا مهمًا جدًا.\n\n'
+          'تعلمت أن وجود شخص يصبر عليك، '
+          'ويسامحك عندما تخطئ، '
+          'ويحاول أن يفهمك رغم أخطائك، '
+          'ليس شيئًا يجب أن تأخذه كأنه مضمون.\n\n'
+          'تعلمت أن الاعتذار وحده لا يكفي.\n\n'
+          'وإذا كنت أريد أن أبقى معك، '
+          'فلازم أثبت لك بأفعالي أنني تعلمت من أخطائي.',
       buttons: [
         LoveButton(
-          text: 'أريد أن أعرف ماذا في قلبك  ♥',
+          text: 'أخبريني ماذا أعدك  ♥',
           onPressed: () {
-            goTo(context, const FinalPage());
+            goTo(context, const PromisePage());
           },
         ),
         const SizedBox(height: 14),
         OutlineLoveButton(
-          text: 'أعطني وعدًا واحدًا',
+          text: 'أريد أن أكمل القراءة',
           onPressed: () {
             goTo(context, const PromisePage());
           },
@@ -416,9 +378,9 @@ class ThirdPage extends StatelessWidget {
   }
 }
 
-// ======================================================
-// صفحة الوعد
-// ======================================================
+// =====================================================
+// صفحة الوعود
+// =====================================================
 
 class PromisePage extends StatelessWidget {
   const PromisePage({super.key});
@@ -426,17 +388,19 @@ class PromisePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoryPage(
-      title: 'وعد واحد',
+      title: 'وعدي لك',
       text:
-          'لا أريد منك وعدًا بأن تبقي معي للأبد.\n\n'
-          'ولا أريد منك أن تنسي ما حدث.\n\n'
-          'أريد فقط فرصة واحدة...\n\n'
-          'أن أثبت لك بأفعالي أنني تعلمت.',
+          'أعدك أن أكون أوفى لك.\n\n'
+          'أعدك أن أحترمك ومشاعرك.\n\n'
+          'وأعدك أنني لن أتعمد خيانتك أو البحث عن شخص آخر خلفك.\n\n'
+          'ولا أريد أن يكون هذا مجرد كلام أقوله اليوم.\n\n'
+          'أريد أن تثبته الأيام والأفعال.\n\n'
+          'لأنك تعنين لي الكثير.',
       buttons: [
         LoveButton(
-          text: 'إلى رسالتي الأخيرة  ♥',
+          text: 'أريد أن أعرف ما في قلبك  ♥',
           onPressed: () {
-            goTo(context, const FinalPage());
+            goTo(context, const PageFour());
           },
         ),
       ],
@@ -444,27 +408,38 @@ class PromisePage extends StatelessWidget {
   }
 }
 
-// ======================================================
+// =====================================================
 // الصفحة الرابعة
-// ======================================================
+// =====================================================
 
-class FinalPage extends StatelessWidget {
-  const FinalPage({super.key});
+class PageFour extends StatelessWidget {
+  const PageFour({super.key});
 
   @override
   Widget build(BuildContext context) {
     return StoryPage(
       number: '04  /  04',
-      title: 'وأخيرًا...',
+      title: 'وأخيرًا... من قلبي',
       text:
-          'هنا أريد أن أقول لك كل الأشياء '
-          'التي لم أستطع قولها من قبل.\n\n'
-          'أريد أن تكون هذه الكلمات مني أنا، '
-          'وليس مجرد كلام جميل.\n\n'
-          'لأنك تعنين لي أكثر مما استطعت أن أظهره.',
+          'رهف...\n\n'
+          'أنا أحبك.\n\n'
+          'أحبك جدًا، وأعشق اليوم الذي عرفتك فيه، '
+          'واليوم الذي دخلتِ فيه حياتي.\n\n'
+          'وأعرف أن كلمة "أحبك" لن تمسح الأشياء التي حصلت، '
+          'ولن تجعل الألم يختفي بمجرد أن تقرئيها.\n\n'
+          'لذلك أنا لا أطلب منك أن تنسي.\n\n'
+          'ولا أطلب منك أن تتجاهلي ما حصل.\n\n'
+          'كل ما أتمناه أن تسمحي لي بفرصة أخيرة '
+          'أثبت لك فيها أنني أستطيع أن أكون أفضل.\n\n'
+          'أريد أن أكمل معك، ليس لأضحك عليك، '
+          'ولا لأقول كلامًا جميلًا ثم أعود لنفس الأخطاء.\n\n'
+          'أريد أن أكمل لأنني أحبك، '
+          'ولأنك أصبحتِ شخصًا مهمًا جدًا في حياتي.\n\n'
+          'أتمنى أن تسامحيني يا رهف، '
+          'وتعطيني فرصة أخيرة. ❤️',
       buttons: [
         LoveButton(
-          text: 'أعطيك فرصة  ♥',
+          text: 'أعطيك فرصة أخيرة  ♥',
           onPressed: () {
             goTo(context, const NewBeginningPage());
           },
@@ -481,9 +456,9 @@ class FinalPage extends StatelessWidget {
   }
 }
 
-// ======================================================
-// النهاية الإيجابية
-// ======================================================
+// =====================================================
+// النهاية: فرصة جديدة
+// =====================================================
 
 class NewBeginningPage extends StatelessWidget {
   const NewBeginningPage({super.key});
@@ -492,13 +467,14 @@ class NewBeginningPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoryPage(
       showBack: false,
-      title: 'لنبدأ من جديد ♥',
+      title: 'لنبدأ من جديد ❤️',
       text:
           'ليس وكأن شيئًا لم يحدث...\n\n'
           'بل وكأننا تعلمنا منه.\n\n'
           'شكرًا لأنك أعطيتني فرصة جديدة.\n\n'
           'هذه المرة سأحاول أن أجعل أفعالي '
-          'تتكلم بدلًا من كلامي.',
+          'تتكلم بدلًا من كلامي.\n\n'
+          'وأتمنى أن تكون الأيام القادمة أجمل من كل ما مضى.',
       buttons: [
         LoveButton(
           text: 'نبدأ من جديد  ♥',
@@ -514,9 +490,9 @@ class NewBeginningPage extends StatelessWidget {
   }
 }
 
-// ======================================================
-// صفحة احترام الوقت
-// ======================================================
+// =====================================================
+// النهاية: تحتاج وقت
+// =====================================================
 
 class TimePage extends StatelessWidget {
   const TimePage({super.key});
@@ -528,9 +504,10 @@ class TimePage extends StatelessWidget {
       text:
           'لن أضغط عليك.\n\n'
           'خذي الوقت الذي تحتاجينه.\n\n'
-          'هذا التطبيق ليس سباقًا، '
-          'ولا يوجد شيء يجبرك على الاستمرار.\n\n'
-          'المهم عندي أن يكون قرارك نابعًا منك.',
+          'أنا فقط أردت أن تعرفي ما في قلبي.\n\n'
+          'ومهما كان قرارك، '
+          'أتمنى أن تعرفي أن هذه الكلمات كانت صادقة.\n\n'
+          'سأحترم قرارك ووقتك.',
       buttons: [
         OutlineLoveButton(
           text: 'العودة',
@@ -543,9 +520,9 @@ class TimePage extends StatelessWidget {
   }
 }
 
-// ======================================================
+// =====================================================
 // صفحة التوقف
-// ======================================================
+// =====================================================
 
 class PausePage extends StatelessWidget {
   const PausePage({super.key});
@@ -556,12 +533,22 @@ class PausePage extends StatelessWidget {
       title: 'خذي لحظتك 🌷',
       text:
           'لا داعي للاستعجال.\n\n'
+          'خذي لحظتك وفكري براحتك.\n\n'
+          'هذا التطبيق ليس سباقًا، '
+          'ولا يوجد شيء يجبرك على الاستمرار.\n\n'
           'عندما تكونين مستعدة، يمكنك العودة وإكمال الرسالة.',
       buttons: [
         LoveButton(
-          text: 'أكمل  ♥',
+          text: 'أكمل الرسالة  ♥',
           onPressed: () {
-            goTo(context, const SecondPage());
+            goTo(context, const PageTwo());
+          },
+        ),
+        const SizedBox(height: 14),
+        OutlineLoveButton(
+          text: 'العودة',
+          onPressed: () {
+            Navigator.pop(context);
           },
         ),
       ],
@@ -569,9 +556,9 @@ class PausePage extends StatelessWidget {
   }
 }
 
-// ======================================================
-// قالب الصفحات
-// ======================================================
+// =====================================================
+// قالب صفحات القصة
+// =====================================================
 
 class StoryPage extends StatelessWidget {
   final String? number;
@@ -592,7 +579,7 @@ class StoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundTop,
+      backgroundColor: bg1,
       body: LoveBackground(
         child: Column(
           children: [
@@ -601,11 +588,13 @@ class StoryPage extends StatelessWidget {
                 alignment: AlignmentDirectional.topStart,
                 child: Padding(
                   padding: const EdgeInsetsDirectional.only(
-                    start: 14,
-                    top: 8,
+                    start: 10,
+                    top: 5,
                   ),
                   child: IconButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
                     icon: const Icon(
                       Icons.arrow_back_ios_new_rounded,
                       color: Colors.white70,
@@ -620,9 +609,9 @@ class StoryPage extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(
-                  25,
-                  10,
-                  25,
+                  24,
+                  8,
+                  24,
                   30,
                 ),
                 child: Column(
@@ -632,46 +621,47 @@ class StoryPage extends StatelessWidget {
                       Text(
                         number!,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: primaryPink.withOpacity(0.9),
+                        style: const TextStyle(
+                          color: pink,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 2,
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 25),
                     ],
 
                     Text(
                       title,
                       textAlign: TextAlign.center,
+                      textDirection: TextDirection.rtl,
                       style: const TextStyle(
-                        color: whiteSoft,
-                        fontSize: 30,
-                        height: 1.3,
-                        fontWeight: FontWeight.w700,
+                        color: textWhite,
+                        fontSize: 29,
+                        height: 1.35,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 22),
 
                     Center(
                       child: Container(
                         width: 45,
                         height: 2,
                         decoration: BoxDecoration(
-                          color: primaryPink,
+                          color: pink,
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 28),
 
                     Container(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(23),
                       decoration: BoxDecoration(
-                        color: cardColor,
+                        color: Colors.white.withOpacity(0.06),
                         borderRadius: BorderRadius.circular(25),
                         border: Border.all(
                           color: Colors.white.withOpacity(0.08),
@@ -689,7 +679,7 @@ class StoryPage extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 35),
+                    const SizedBox(height: 32),
 
                     ...buttons,
                   ],
@@ -703,9 +693,9 @@ class StoryPage extends StatelessWidget {
   }
 }
 
-// ======================================================
+// =====================================================
 // الزر الرئيسي
-// ======================================================
+// =====================================================
 
 class LoveButton extends StatelessWidget {
   final String text;
@@ -725,7 +715,7 @@ class LoveButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryPink,
+          backgroundColor: pink,
           foregroundColor: const Color(0xFF32121F),
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -745,9 +735,9 @@ class LoveButton extends StatelessWidget {
   }
 }
 
-// ======================================================
+// =====================================================
 // الزر الثانوي
-// ======================================================
+// =====================================================
 
 class OutlineLoveButton extends StatelessWidget {
   final String text;
@@ -767,9 +757,9 @@ class OutlineLoveButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: softPink,
+          foregroundColor: lightPink,
           side: BorderSide(
-            color: primaryPink.withOpacity(0.45),
+            color: pink.withOpacity(0.45),
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
