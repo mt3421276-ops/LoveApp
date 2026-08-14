@@ -1,8 +1,13 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(const LoveApp());
 }
+
+// ============================================================
+// التطبيق
+// ============================================================
 
 class LoveApp extends StatelessWidget {
   const LoveApp({super.key});
@@ -14,46 +19,49 @@ class LoveApp extends StatelessWidget {
       title: 'رهف ❤️',
       theme: ThemeData(
         useMaterial3: true,
+        fontFamily: 'sans',
       ),
       home: const HomePage(),
     );
   }
 }
 
-// =====================================================
+// ============================================================
 // الألوان
-// =====================================================
+// ============================================================
 
-const Color bg1 = Color(0xFF160C15);
-const Color bg2 = Color(0xFF3A1729);
-const Color pink = Color(0xFFFF789F);
-const Color lightPink = Color(0xFFFFD5E1);
-const Color textWhite = Color(0xFFFFF8FA);
+const Color night1 = Color(0xFF080914);
+const Color night2 = Color(0xFF171026);
+const Color night3 = Color(0xFF35152D);
 
-// =====================================================
+const Color pink = Color(0xFFFF6F9C);
+const Color pinkLight = Color(0xFFFFB7CB);
+const Color whiteText = Color(0xFFFFF8FB);
+
+// ============================================================
 // الانتقال بين الصفحات
-// =====================================================
+// ============================================================
 
 void goTo(BuildContext context, Widget page) {
   Navigator.push(
     context,
     PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 650),
-      reverseTransitionDuration: const Duration(milliseconds: 450),
+      transitionDuration: const Duration(milliseconds: 750),
+      reverseTransitionDuration: const Duration(milliseconds: 500),
       pageBuilder: (_, animation, __) => page,
       transitionsBuilder: (_, animation, __, child) {
-        final curved = CurvedAnimation(
+        final curve = CurvedAnimation(
           parent: animation,
           curve: Curves.easeOutCubic,
         );
 
         return FadeTransition(
-          opacity: curved,
+          opacity: curve,
           child: SlideTransition(
             position: Tween<Offset>(
-              begin: const Offset(0.08, 0),
+              begin: const Offset(0.06, 0.02),
               end: Offset.zero,
-            ).animate(curved),
+            ).animate(curve),
             child: child,
           ),
         );
@@ -62,17 +70,41 @@ void goTo(BuildContext context, Widget page) {
   );
 }
 
-// =====================================================
-// الخلفية
-// =====================================================
+// ============================================================
+// الخلفية المتحركة
+// ============================================================
 
-class LoveBackground extends StatelessWidget {
+class RomanticBackground extends StatefulWidget {
   final Widget child;
 
-  const LoveBackground({
+  const RomanticBackground({
     super.key,
     required this.child,
   });
+
+  @override
+  State<RomanticBackground> createState() => _RomanticBackgroundState();
+}
+
+class _RomanticBackgroundState extends State<RomanticBackground>
+    with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 18),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,25 +114,52 @@ class LoveBackground extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            bg1,
-            bg2,
-            Color(0xFF120910),
+            night1,
+            night2,
+            night3,
+            night1,
           ],
         ),
       ),
       child: Stack(
         children: [
-          Positioned(
-            top: -90,
-            right: -80,
-            child: _glow(230),
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: controller,
+              builder: (_, __) {
+                return CustomPaint(
+                  painter: StarPainter(
+                    progress: controller.value,
+                  ),
+                );
+              },
+            ),
           ),
+
+          // توهج علوي
+          Positioned(
+            top: -100,
+            right: -80,
+            child: _glow(240),
+          ),
+
+          // توهج سفلي
           Positioned(
             bottom: -120,
             left: -100,
             child: _glow(280),
           ),
-          SafeArea(child: child),
+
+          // قمر
+          const Positioned(
+            top: 55,
+            right: 30,
+            child: Moon(),
+          ),
+
+          SafeArea(
+            child: widget.child,
+          ),
         ],
       ),
     );
@@ -112,12 +171,12 @@ class LoveBackground extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: pink.withOpacity(0.07),
+        color: pink.withOpacity(0.035),
         boxShadow: [
           BoxShadow(
             color: pink.withOpacity(0.08),
             blurRadius: 100,
-            spreadRadius: 35,
+            spreadRadius: 30,
           ),
         ],
       ),
@@ -125,9 +184,158 @@ class LoveBackground extends StatelessWidget {
   }
 }
 
-// =====================================================
+// ============================================================
+// النجوم
+// ============================================================
+
+class StarPainter extends CustomPainter {
+  final double progress;
+
+  StarPainter({
+    required this.progress,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final random = Random(77);
+
+    for (int i = 0; i < 75; i++) {
+      final x = random.nextDouble() * size.width;
+      final baseY = random.nextDouble() * size.height;
+
+      final y =
+          (baseY + sin(progress * 2 * pi + i) * 3) % size.height;
+
+      final twinkle =
+          (sin(progress * 2 * pi * 2 + i) + 1) / 2;
+
+      final radius = 0.5 + random.nextDouble() * 1.3;
+
+      final paint = Paint()
+        ..color = Colors.white.withOpacity(
+          0.18 + twinkle * 0.45,
+        );
+
+      canvas.drawCircle(
+        Offset(x, y),
+        radius,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant StarPainter oldDelegate) {
+    return oldDelegate.progress != progress;
+  }
+}
+
+// ============================================================
+// القمر
+// ============================================================
+
+class Moon extends StatelessWidget {
+  const Moon({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0xFFFFE9F1),
+        boxShadow: [
+          BoxShadow(
+            color: pinkLight.withOpacity(0.25),
+            blurRadius: 25,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: const Align(
+        alignment: Alignment(-0.45, -0.25),
+        child: SizedBox(
+          width: 42,
+          height: 42,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: night1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// القلب النابض
+// ============================================================
+
+class PulsingHeart extends StatefulWidget {
+  final double size;
+
+  const PulsingHeart({
+    super.key,
+    this.size = 80,
+  });
+
+  @override
+  State<PulsingHeart> createState() => _PulsingHeartState();
+}
+
+class _PulsingHeartState extends State<PulsingHeart>
+    with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1300),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (_, __) {
+        final scale =
+            0.92 + (controller.value * 0.10);
+
+        return Transform.scale(
+          scale: scale,
+          child: Icon(
+            Icons.favorite_rounded,
+            color: pink,
+            size: widget.size,
+            shadows: [
+              Shadow(
+                color: pink.withOpacity(0.65),
+                blurRadius: 25,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ============================================================
 // الشاشة الرئيسية
-// =====================================================
+// ============================================================
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -146,10 +354,8 @@ class _HomePageState extends State<HomePage>
 
     controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-
-    controller.forward();
+      duration: const Duration(milliseconds: 1600),
+    )..forward();
   }
 
   @override
@@ -161,10 +367,16 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: LoveBackground(
+      backgroundColor: night1,
+      body: RomanticBackground(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(28),
+            padding: const EdgeInsets.fromLTRB(
+              26,
+              45,
+              26,
+              30,
+            ),
             child: FadeTransition(
               opacity: CurvedAnimation(
                 parent: controller,
@@ -172,32 +384,38 @@ class _HomePageState extends State<HomePage>
               ),
               child: Column(
                 children: [
-                  const Text(
-                    '♡',
-                    style: TextStyle(
-                      color: pink,
-                      fontSize: 90,
-                      height: 1,
-                    ),
+                  const PulsingHeart(
+                    size: 82,
                   ),
 
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 22),
 
                   const Text(
                     'رهف',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: textWhite,
-                      fontSize: 48,
+                      color: whiteText,
+                      fontSize: 50,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
 
                   Container(
-                    width: 45,
+                    width: 55,
                     height: 2,
-                    color: pink,
+                    decoration: BoxDecoration(
+                      color: pink,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: pink.withOpacity(0.5),
+                          blurRadius: 10,
+                        ),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 35),
@@ -205,30 +423,35 @@ class _HomePageState extends State<HomePage>
                   const Text(
                     'إلى الإنسانة التي أتمنى أن تسامحني...',
                     textAlign: TextAlign.center,
+                    textDirection: TextDirection.rtl,
                     style: TextStyle(
-                      color: lightPink,
+                      color: pinkLight,
                       fontSize: 20,
-                      height: 1.5,
+                      height: 1.6,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
 
                   const SizedBox(height: 25),
 
-                  const Text(
-                    'صنعتُ هذا الشيء بنفسي.\n\n'
-                    'ليس لأغيّر قرارك،\n'
-                    'ولا لأجبرك على شيء.\n\n'
-                    'فقط لأن هناك أشياء كثيرة\n'
-                    'أريد أن أقولها لك.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 17,
-                      height: 1.8,
+                  GlassCard(
+                    child: const Text(
+                      'صنعتُ هذا الشيء بنفسي.\n\n'
+                      'ليس لأغيّر قرارك،\n'
+                      'ولا لأجبرك على شيء.\n\n'
+                      'فقط لأن هناك أشياء كثيرة\n'
+                      'أريد أن أقولها لك.',
+                      textAlign: TextAlign.center,
+                      textDirection: TextDirection.rtl,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        height: 1.9,
+                      ),
                     ),
                   ),
 
-                  const SizedBox(height: 45),
+                  const SizedBox(height: 35),
 
                   LoveButton(
                     text: 'ابدئي قصتي  ♥',
@@ -241,6 +464,7 @@ class _HomePageState extends State<HomePage>
 
                   const Text(
                     'خذي وقتك... لا يوجد أي ضغط',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white38,
                       fontSize: 12,
@@ -256,9 +480,9 @@ class _HomePageState extends State<HomePage>
   }
 }
 
-// =====================================================
+// ============================================================
 // الصفحة الأولى
-// =====================================================
+// ============================================================
 
 class PageOne extends StatelessWidget {
   const PageOne({super.key});
@@ -296,9 +520,9 @@ class PageOne extends StatelessWidget {
   }
 }
 
-// =====================================================
+// ============================================================
 // الصفحة الثانية
-// =====================================================
+// ============================================================
 
 class PageTwo extends StatelessWidget {
   const PageTwo({super.key});
@@ -338,9 +562,9 @@ class PageTwo extends StatelessWidget {
   }
 }
 
-// =====================================================
+// ============================================================
 // الصفحة الثالثة
-// =====================================================
+// ============================================================
 
 class PageThree extends StatelessWidget {
   const PageThree({super.key});
@@ -361,7 +585,7 @@ class PageThree extends StatelessWidget {
           'فلازم أثبت لك بأفعالي أنني تعلمت من أخطائي.',
       buttons: [
         LoveButton(
-          text: 'أخبريني ماذا أعدك  ♥',
+          text: 'أريد أن أعرف وعدك  ♥',
           onPressed: () {
             goTo(context, const PromisePage());
           },
@@ -378,9 +602,9 @@ class PageThree extends StatelessWidget {
   }
 }
 
-// =====================================================
-// صفحة الوعود
-// =====================================================
+// ============================================================
+// صفحة الوعد
+// ============================================================
 
 class PromisePage extends StatelessWidget {
   const PromisePage({super.key});
@@ -408,9 +632,9 @@ class PromisePage extends StatelessWidget {
   }
 }
 
-// =====================================================
+// ============================================================
 // الصفحة الرابعة
-// =====================================================
+// ============================================================
 
 class PageFour extends StatelessWidget {
   const PageFour({super.key});
@@ -446,7 +670,7 @@ class PageFour extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         OutlineLoveButton(
-          text: 'أحتاج وقتًا  ♡',
+          text: 'أحتاج وقتًا  🌷',
           onPressed: () {
             goTo(context, const TimePage());
           },
@@ -456,9 +680,9 @@ class PageFour extends StatelessWidget {
   }
 }
 
-// =====================================================
-// النهاية: فرصة جديدة
-// =====================================================
+// ============================================================
+// بداية جديدة
+// ============================================================
 
 class NewBeginningPage extends StatelessWidget {
   const NewBeginningPage({super.key});
@@ -467,6 +691,7 @@ class NewBeginningPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoryPage(
       showBack: false,
+      specialHeart: true,
       title: 'لنبدأ من جديد ❤️',
       text:
           'ليس وكأن شيئًا لم يحدث...\n\n'
@@ -490,9 +715,9 @@ class NewBeginningPage extends StatelessWidget {
   }
 }
 
-// =====================================================
-// النهاية: تحتاج وقت
-// =====================================================
+// ============================================================
+// تحتاج وقتًا
+// ============================================================
 
 class TimePage extends StatelessWidget {
   const TimePage({super.key});
@@ -500,6 +725,7 @@ class TimePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoryPage(
+      specialHeart: true,
       title: 'خذي وقتك 🌷',
       text:
           'لن أضغط عليك.\n\n'
@@ -520,9 +746,9 @@ class TimePage extends StatelessWidget {
   }
 }
 
-// =====================================================
-// صفحة التوقف
-// =====================================================
+// ============================================================
+// لحظة توقف
+// ============================================================
 
 class PausePage extends StatelessWidget {
   const PausePage({super.key});
@@ -556,9 +782,9 @@ class PausePage extends StatelessWidget {
   }
 }
 
-// =====================================================
+// ============================================================
 // قالب صفحات القصة
-// =====================================================
+// ============================================================
 
 class StoryPage extends StatelessWidget {
   final String? number;
@@ -566,6 +792,7 @@ class StoryPage extends StatelessWidget {
   final String text;
   final List<Widget> buttons;
   final bool showBack;
+  final bool specialHeart;
 
   const StoryPage({
     super.key,
@@ -574,13 +801,14 @@ class StoryPage extends StatelessWidget {
     required this.text,
     required this.buttons,
     this.showBack = true,
+    this.specialHeart = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bg1,
-      body: LoveBackground(
+      backgroundColor: night1,
+      body: RomanticBackground(
         child: Column(
           children: [
             if (showBack)
@@ -588,8 +816,8 @@ class StoryPage extends StatelessWidget {
                 alignment: AlignmentDirectional.topStart,
                 child: Padding(
                   padding: const EdgeInsetsDirectional.only(
-                    start: 10,
-                    top: 5,
+                    start: 8,
+                    top: 4,
                   ),
                   child: IconButton(
                     onPressed: () {
@@ -598,25 +826,31 @@ class StoryPage extends StatelessWidget {
                     icon: const Icon(
                       Icons.arrow_back_ios_new_rounded,
                       color: Colors.white70,
-                      size: 20,
+                      size: 19,
                     ),
                   ),
                 ),
               )
             else
-              const SizedBox(height: 48),
+              const SizedBox(height: 38),
 
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(
-                  24,
-                  8,
-                  24,
+                  23,
+                  5,
+                  23,
                   30,
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (specialHeart) ...[
+                      const PulsingHeart(
+                        size: 55,
+                      ),
+                      const SizedBox(height: 15),
+                    ],
+
                     if (number != null) ...[
                       Text(
                         number!,
@@ -628,7 +862,7 @@ class StoryPage extends StatelessWidget {
                           letterSpacing: 2,
                         ),
                       ),
-                      const SizedBox(height: 25),
+                      const SizedBox(height: 22),
                     ],
 
                     Text(
@@ -636,37 +870,44 @@ class StoryPage extends StatelessWidget {
                       textAlign: TextAlign.center,
                       textDirection: TextDirection.rtl,
                       style: const TextStyle(
-                        color: textWhite,
+                        color: whiteText,
                         fontSize: 29,
                         height: 1.35,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 18),
 
-                    Center(
-                      child: Container(
-                        width: 45,
-                        height: 2,
-                        decoration: BoxDecoration(
-                          color: pink,
-                          borderRadius: BorderRadius.circular(20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 35,
+                          height: 1,
+                          color: pink.withOpacity(0.6),
                         ),
-                      ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10,
+                          ),
+                          child: Icon(
+                            Icons.favorite_rounded,
+                            color: pink,
+                            size: 15,
+                          ),
+                        ),
+                        Container(
+                          width: 35,
+                          height: 1,
+                          color: pink.withOpacity(0.6),
+                        ),
+                      ],
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 25),
 
-                    Container(
-                      padding: const EdgeInsets.all(23),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.08),
-                        ),
-                      ),
+                    GlassCard(
                       child: Text(
                         text,
                         textAlign: TextAlign.center,
@@ -679,9 +920,14 @@ class StoryPage extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 30),
 
                     ...buttons,
+
+                    const SizedBox(height: 12),
+
+                    if (number != null)
+                      _Progress(number: number!),
                   ],
                 ),
               ),
@@ -693,9 +939,89 @@ class StoryPage extends StatelessWidget {
   }
 }
 
-// =====================================================
+// ============================================================
+// بطاقة زجاجية
+// ============================================================
+
+class GlassCard extends StatelessWidget {
+  final Widget child;
+
+  const GlassCard({
+    super.key,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(23),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.065),
+        borderRadius: BorderRadius.circular(27),
+        border: Border.all(
+          color: pinkLight.withOpacity(0.13),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 25,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+// ============================================================
+// شريط التقدم
+// ============================================================
+
+class _Progress extends StatelessWidget {
+  final String number;
+
+  const _Progress({
+    required this.number,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    int current = 1;
+
+    if (number.startsWith('02')) {
+      current = 2;
+    } else if (number.startsWith('03')) {
+      current = 3;
+    } else if (number.startsWith('04')) {
+      current = 4;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        4,
+        (index) => AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: index + 1 == current ? 22 : 7,
+          height: 7,
+          decoration: BoxDecoration(
+            color: index + 1 == current
+                ? pink
+                : Colors.white.withOpacity(0.22),
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
 // الزر الرئيسي
-// =====================================================
+// ============================================================
 
 class LoveButton extends StatelessWidget {
   final String text;
@@ -710,21 +1036,23 @@ class LoveButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 57,
+      height: 58,
       width: double.infinity,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: pink,
-          foregroundColor: const Color(0xFF32121F),
-          elevation: 0,
+          foregroundColor: const Color(0xFF30111E),
+          elevation: 8,
+          shadowColor: pink.withOpacity(0.25),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(19),
           ),
         ),
         child: Text(
           text,
           textAlign: TextAlign.center,
+          textDirection: TextDirection.rtl,
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -735,9 +1063,9 @@ class LoveButton extends StatelessWidget {
   }
 }
 
-// =====================================================
+// ============================================================
 // الزر الثانوي
-// =====================================================
+// ============================================================
 
 class OutlineLoveButton extends StatelessWidget {
   final String text;
@@ -757,17 +1085,19 @@ class OutlineLoveButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: lightPink,
+          foregroundColor: pinkLight,
           side: BorderSide(
-            color: pink.withOpacity(0.45),
+            color: pink.withOpacity(0.48),
+            width: 1,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(19),
           ),
         ),
         child: Text(
           text,
           textAlign: TextAlign.center,
+          textDirection: TextDirection.rtl,
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w500,
