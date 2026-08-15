@@ -1,16 +1,58 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 void main() {
   runApp(const LoveApp());
 }
 
 // ============================================================
+// مشغل الموسيقى - يبقى موجودًا أثناء التنقل بين الصفحات
+// ============================================================
+
+final AudioPlayer lovePlayer = AudioPlayer();
+
+bool musicPlaying = false;
+
+// ============================================================
 // التطبيق
 // ============================================================
 
-class LoveApp extends StatelessWidget {
+class LoveApp extends StatefulWidget {
   const LoveApp({super.key});
+
+  @override
+  State<LoveApp> createState() => _LoveAppState();
+}
+
+class _LoveAppState extends State<LoveApp> {
+  @override
+  void initState() {
+    super.initState();
+
+    _startMusic();
+  }
+
+  Future<void> _startMusic() async {
+    try {
+      await lovePlayer.setReleaseMode(ReleaseMode.loop);
+      await lovePlayer.setVolume(0.35);
+
+      await lovePlayer.play(
+        AssetSource('audio/love_song.mp3'),
+      );
+
+      musicPlaying = true;
+    } catch (e) {
+      debugPrint('Music error: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    lovePlayer.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,24 +61,11 @@ class LoveApp extends StatelessWidget {
       title: 'رهف ❤️',
       theme: ThemeData(
         useMaterial3: true,
-        fontFamily: 'sans',
       ),
       home: const HomePage(),
     );
   }
 }
-
-// ============================================================
-// الألوان
-// ============================================================
-
-const Color night1 = Color(0xFF080914);
-const Color night2 = Color(0xFF171026);
-const Color night3 = Color(0xFF35152D);
-
-const Color pink = Color(0xFFFF6F9C);
-const Color pinkLight = Color(0xFFFFB7CB);
-const Color whiteText = Color(0xFFFFF8FB);
 
 // ============================================================
 // الانتقال بين الصفحات
@@ -71,7 +100,19 @@ void goTo(BuildContext context, Widget page) {
 }
 
 // ============================================================
-// الخلفية المتحركة
+// الألوان
+// ============================================================
+
+const Color night1 = Color(0xFF080914);
+const Color night2 = Color(0xFF171026);
+const Color night3 = Color(0xFF35152D);
+
+const Color pink = Color(0xFFFF6F9C);
+const Color pinkLight = Color(0xFFFFB7CB);
+const Color whiteText = Color(0xFFFFF8FB);
+
+// ============================================================
+// الخلفية
 // ============================================================
 
 class RomanticBackground extends StatefulWidget {
@@ -83,7 +124,8 @@ class RomanticBackground extends StatefulWidget {
   });
 
   @override
-  State<RomanticBackground> createState() => _RomanticBackgroundState();
+  State<RomanticBackground> createState() =>
+      _RomanticBackgroundState();
 }
 
 class _RomanticBackgroundState extends State<RomanticBackground>
@@ -136,21 +178,18 @@ class _RomanticBackgroundState extends State<RomanticBackground>
             ),
           ),
 
-          // توهج علوي
           Positioned(
             top: -100,
             right: -80,
             child: _glow(240),
           ),
 
-          // توهج سفلي
           Positioned(
             bottom: -120,
             left: -100,
             child: _glow(280),
           ),
 
-          // قمر
           const Positioned(
             top: 55,
             right: 30,
@@ -204,7 +243,8 @@ class StarPainter extends CustomPainter {
       final baseY = random.nextDouble() * size.height;
 
       final y =
-          (baseY + sin(progress * 2 * pi + i) * 3) % size.height;
+          (baseY + sin(progress * 2 * pi + i) * 3) %
+              size.height;
 
       final twinkle =
           (sin(progress * 2 * pi * 2 + i) + 1) / 2;
@@ -283,7 +323,8 @@ class PulsingHeart extends StatefulWidget {
   });
 
   @override
-  State<PulsingHeart> createState() => _PulsingHeartState();
+  State<PulsingHeart> createState() =>
+      _PulsingHeartState();
 }
 
 class _PulsingHeartState extends State<PulsingHeart>
@@ -312,7 +353,7 @@ class _PulsingHeartState extends State<PulsingHeart>
       animation: controller,
       builder: (_, __) {
         final scale =
-            0.92 + (controller.value * 0.10);
+            0.92 + controller.value * 0.10;
 
         return Transform.scale(
           scale: scale,
@@ -334,6 +375,81 @@ class _PulsingHeartState extends State<PulsingHeart>
 }
 
 // ============================================================
+// زر الموسيقى
+// ============================================================
+
+class MusicButton extends StatefulWidget {
+  const MusicButton({super.key});
+
+  @override
+  State<MusicButton> createState() =>
+      _MusicButtonState();
+}
+
+class _MusicButtonState extends State<MusicButton> {
+  @override
+  void initState() {
+    super.initState();
+
+    lovePlayer.onPlayerStateChanged.listen((state) {
+      if (!mounted) return;
+
+      setState(() {
+        musicPlaying =
+            state == PlayerState.playing;
+      });
+    });
+  }
+
+  Future<void> toggleMusic() async {
+    if (musicPlaying) {
+      await lovePlayer.pause();
+    } else {
+      await lovePlayer.resume();
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: toggleMusic,
+        borderRadius: BorderRadius.circular(30),
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: pink.withOpacity(0.35),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: pink.withOpacity(0.08),
+                blurRadius: 15,
+              ),
+            ],
+          ),
+          child: Icon(
+            musicPlaying
+                ? Icons.music_note_rounded
+                : Icons.music_off_rounded,
+            color: pinkLight,
+            size: 22,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
 // الشاشة الرئيسية
 // ============================================================
 
@@ -341,7 +457,8 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() =>
+      _HomePageState();
 }
 
 class _HomePageState extends State<HomePage>
@@ -369,111 +486,125 @@ class _HomePageState extends State<HomePage>
     return Scaffold(
       backgroundColor: night1,
       body: RomanticBackground(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              26,
-              45,
-              26,
-              30,
-            ),
-            child: FadeTransition(
-              opacity: CurvedAnimation(
-                parent: controller,
-                curve: Curves.easeIn,
-              ),
-              child: Column(
-                children: [
-                  const PulsingHeart(
-                    size: 82,
+        child: Stack(
+          children: [
+            Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  26,
+                  45,
+                  26,
+                  30,
+                ),
+                child: FadeTransition(
+                  opacity: CurvedAnimation(
+                    parent: controller,
+                    curve: Curves.easeIn,
                   ),
+                  child: Column(
+                    children: [
+                      const PulsingHeart(size: 82),
 
-                  const SizedBox(height: 22),
+                      const SizedBox(height: 22),
 
-                  const Text(
-                    'رهف',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: whiteText,
-                      fontSize: 50,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Container(
-                    width: 55,
-                    height: 2,
-                    decoration: BoxDecoration(
-                      color: pink,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: pink.withOpacity(0.5),
-                          blurRadius: 10,
+                      const Text(
+                        'رهف',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: whiteText,
+                          fontSize: 50,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
                         ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 35),
-
-                  const Text(
-                    'إلى الإنسانة التي أتمنى أن تسامحني...',
-                    textAlign: TextAlign.center,
-                    textDirection: TextDirection.rtl,
-                    style: TextStyle(
-                      color: pinkLight,
-                      fontSize: 20,
-                      height: 1.6,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  GlassCard(
-                    child: const Text(
-                      'صنعتُ هذا الشيء بنفسي.\n\n'
-                      'ليس لأغيّر قرارك،\n'
-                      'ولا لأجبرك على شيء.\n\n'
-                      'فقط لأن هناك أشياء كثيرة\n'
-                      'أريد أن أقولها لك.',
-                      textAlign: TextAlign.center,
-                      textDirection: TextDirection.rtl,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        height: 1.9,
                       ),
-                    ),
+
+                      const SizedBox(height: 10),
+
+                      Container(
+                        width: 55,
+                        height: 2,
+                        decoration: BoxDecoration(
+                          color: pink,
+                          borderRadius:
+                              BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  pink.withOpacity(0.5),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 35),
+
+                      const Text(
+                        'إلى الإنسانة التي أتمنى أن تسامحني...',
+                        textAlign: TextAlign.center,
+                        textDirection: TextDirection.rtl,
+                        style: TextStyle(
+                          color: pinkLight,
+                          fontSize: 20,
+                          height: 1.6,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      GlassCard(
+                        child: const Text(
+                          'صنعتُ هذا الشيء بنفسي.\n\n'
+                          'ليس لأغيّر قرارك،\n'
+                          'ولا لأجبرك على شيء.\n\n'
+                          'فقط لأن هناك أشياء كثيرة\n'
+                          'أريد أن أقولها لك.',
+                          textAlign: TextAlign.center,
+                          textDirection:
+                              TextDirection.rtl,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            height: 1.9,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 35),
+
+                      LoveButton(
+                        text: 'ابدئي قصتي  ♥',
+                        onPressed: () {
+                          goTo(
+                            context,
+                            const PageOne(),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      const Text(
+                        'خذي وقتك... لا يوجد أي ضغط',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white38,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
-
-                  const SizedBox(height: 35),
-
-                  LoveButton(
-                    text: 'ابدئي قصتي  ♥',
-                    onPressed: () {
-                      goTo(context, const PageOne());
-                    },
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  const Text(
-                    'خذي وقتك... لا يوجد أي ضغط',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white38,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
+
+            const Positioned(
+              top: 15,
+              left: 18,
+              child: MusicButton(),
+            ),
+          ],
         ),
       ),
     );
@@ -587,14 +718,20 @@ class PageThree extends StatelessWidget {
         LoveButton(
           text: 'أريد أن أعرف وعدك  ♥',
           onPressed: () {
-            goTo(context, const PromisePage());
+            goTo(
+              context,
+              const PromisePage(),
+            );
           },
         ),
         const SizedBox(height: 14),
         OutlineLoveButton(
           text: 'أريد أن أكمل القراءة',
           onPressed: () {
-            goTo(context, const PromisePage());
+            goTo(
+              context,
+              const PromisePage(),
+            );
           },
         ),
       ],
@@ -624,7 +761,10 @@ class PromisePage extends StatelessWidget {
         LoveButton(
           text: 'أريد أن أعرف ما في قلبك  ♥',
           onPressed: () {
-            goTo(context, const PageFour());
+            goTo(
+              context,
+              const PageFour(),
+            );
           },
         ),
       ],
@@ -665,14 +805,20 @@ class PageFour extends StatelessWidget {
         LoveButton(
           text: 'أعطيك فرصة أخيرة  ♥',
           onPressed: () {
-            goTo(context, const NewBeginningPage());
+            goTo(
+              context,
+              const NewBeginningPage(),
+            );
           },
         ),
         const SizedBox(height: 14),
         OutlineLoveButton(
           text: 'أحتاج وقتًا  🌷',
           onPressed: () {
-            goTo(context, const TimePage());
+            goTo(
+              context,
+              const TimePage(),
+            );
           },
         ),
       ],
@@ -767,7 +913,10 @@ class PausePage extends StatelessWidget {
         LoveButton(
           text: 'أكمل الرسالة  ♥',
           onPressed: () {
-            goTo(context, const PageTwo());
+            goTo(
+              context,
+              const PageTwo(),
+            );
           },
         ),
         const SizedBox(height: 14),
@@ -809,128 +958,147 @@ class StoryPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: night1,
       body: RomanticBackground(
-        child: Column(
+        child: Stack(
           children: [
-            if (showBack)
-              Align(
-                alignment: AlignmentDirectional.topStart,
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    start: 8,
-                    top: 4,
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white70,
-                      size: 19,
-                    ),
-                  ),
-                ),
-              )
-            else
-              const SizedBox(height: 38),
-
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  23,
-                  5,
-                  23,
-                  30,
-                ),
-                child: Column(
-                  children: [
-                    if (specialHeart) ...[
-                      const PulsingHeart(
-                        size: 55,
+            Column(
+              children: [
+                if (showBack)
+                  Align(
+                    alignment:
+                        AlignmentDirectional.topStart,
+                    child: Padding(
+                      padding:
+                          const EdgeInsetsDirectional.only(
+                        start: 8,
+                        top: 4,
                       ),
-                      const SizedBox(height: 15),
-                    ],
-
-                    if (number != null) ...[
-                      Text(
-                        number!,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: pink,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white70,
+                          size: 19,
                         ),
                       ),
-                      const SizedBox(height: 22),
-                    ],
-
-                    Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      textDirection: TextDirection.rtl,
-                      style: const TextStyle(
-                        color: whiteText,
-                        fontSize: 29,
-                        height: 1.35,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
+                  )
+                else
+                  const SizedBox(height: 38),
 
-                    const SizedBox(height: 18),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding:
+                        const EdgeInsets.fromLTRB(
+                      23,
+                      5,
+                      23,
+                      30,
+                    ),
+                    child: Column(
                       children: [
-                        Container(
-                          width: 35,
-                          height: 1,
-                          color: pink.withOpacity(0.6),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 10,
+                        if (specialHeart) ...[
+                          const PulsingHeart(size: 55),
+                          const SizedBox(height: 15),
+                        ],
+
+                        if (number != null) ...[
+                          Text(
+                            number!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: pink,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2,
+                            ),
                           ),
-                          child: Icon(
-                            Icons.favorite_rounded,
-                            color: pink,
-                            size: 15,
+                          const SizedBox(height: 22),
+                        ],
+
+                        Text(
+                          title,
+                          textAlign: TextAlign.center,
+                          textDirection:
+                              TextDirection.rtl,
+                          style: const TextStyle(
+                            color: whiteText,
+                            fontSize: 29,
+                            height: 1.35,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Container(
-                          width: 35,
-                          height: 1,
-                          color: pink.withOpacity(0.6),
+
+                        const SizedBox(height: 18),
+
+                        Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 35,
+                              height: 1,
+                              color:
+                                  pink.withOpacity(0.6),
+                            ),
+                            const Padding(
+                              padding:
+                                  EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
+                              child: Icon(
+                                Icons.favorite_rounded,
+                                color: pink,
+                                size: 15,
+                              ),
+                            ),
+                            Container(
+                              width: 35,
+                              height: 1,
+                              color:
+                                  pink.withOpacity(0.6),
+                            ),
+                          ],
                         ),
+
+                        const SizedBox(height: 25),
+
+                        GlassCard(
+                          child: Text(
+                            text,
+                            textAlign: TextAlign.center,
+                            textDirection:
+                                TextDirection.rtl,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              height: 2,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        ...buttons,
+
+                        const SizedBox(height: 12),
+
+                        if (number != null)
+                          _Progress(
+                            number: number!,
+                          ),
                       ],
                     ),
-
-                    const SizedBox(height: 25),
-
-                    GlassCard(
-                      child: Text(
-                        text,
-                        textAlign: TextAlign.center,
-                        textDirection: TextDirection.rtl,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          height: 2,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    ...buttons,
-
-                    const SizedBox(height: 12),
-
-                    if (number != null)
-                      _Progress(number: number!),
-                  ],
+                  ),
                 ),
-              ),
+              ],
+            ),
+
+            Positioned(
+              top: 12,
+              left: 18,
+              child: const MusicButton(),
             ),
           ],
         ),
@@ -940,7 +1108,7 @@ class StoryPage extends StatelessWidget {
 }
 
 // ============================================================
-// بطاقة زجاجية
+// البطاقة الزجاجية
 // ============================================================
 
 class GlassCard extends StatelessWidget {
@@ -1003,15 +1171,19 @@ class _Progress extends StatelessWidget {
       children: List.generate(
         4,
         (index) => AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: index + 1 == current ? 22 : 7,
+          duration:
+              const Duration(milliseconds: 300),
+          margin:
+              const EdgeInsets.symmetric(horizontal: 4),
+          width:
+              index + 1 == current ? 22 : 7,
           height: 7,
           decoration: BoxDecoration(
             color: index + 1 == current
                 ? pink
                 : Colors.white.withOpacity(0.22),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius:
+                BorderRadius.circular(20),
           ),
         ),
       ),
@@ -1042,17 +1214,21 @@ class LoveButton extends StatelessWidget {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: pink,
-          foregroundColor: const Color(0xFF30111E),
+          foregroundColor:
+              const Color(0xFF30111E),
           elevation: 8,
-          shadowColor: pink.withOpacity(0.25),
+          shadowColor:
+              pink.withOpacity(0.25),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(19),
+            borderRadius:
+                BorderRadius.circular(19),
           ),
         ),
         child: Text(
           text,
           textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
+          textDirection:
+              TextDirection.rtl,
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -1067,7 +1243,8 @@ class LoveButton extends StatelessWidget {
 // الزر الثانوي
 // ============================================================
 
-class OutlineLoveButton extends StatelessWidget {
+class OutlineLoveButton
+    extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
 
@@ -1088,16 +1265,17 @@ class OutlineLoveButton extends StatelessWidget {
           foregroundColor: pinkLight,
           side: BorderSide(
             color: pink.withOpacity(0.48),
-            width: 1,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(19),
+            borderRadius:
+                BorderRadius.circular(19),
           ),
         ),
         child: Text(
           text,
           textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
+          textDirection:
+              TextDirection.rtl,
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w500,

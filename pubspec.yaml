@@ -1,5 +1,5 @@
 name: love_app
-description: تطبيق رسالة اعتذار وحب
+description: A romantic Flutter application for Rahaf.
 publish_to: "none"
 
 version: 1.0.0+1
@@ -10,10 +10,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.8
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/audio/love_song.mp3
