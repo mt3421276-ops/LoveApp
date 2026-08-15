@@ -783,6 +783,12 @@ class PageFour extends StatelessWidget {
   Widget build(BuildContext context) {
     return StoryPage(
       number: '04  /  04',
+
+      // ======================================================
+      // التعديل الوحيد: إضافة صورة رهف
+      // ======================================================
+      photoAsset: 'assets/images/rahaf.jpg',
+
       title: 'وأخيرًا... من قلبي',
       text:
           'رهف...\n\n'
@@ -943,6 +949,13 @@ class StoryPage extends StatelessWidget {
   final bool showBack;
   final bool specialHeart;
 
+  // ============================================================
+  // التعديل الوحيد: مسار الصورة اختياري
+  // الصفحات الأخرى لن تتأثر
+  // ============================================================
+
+  final String? photoAsset;
+
   const StoryPage({
     super.key,
     this.number,
@@ -951,6 +964,7 @@ class StoryPage extends StatelessWidget {
     required this.buttons,
     this.showBack = true,
     this.specialHeart = false,
+    this.photoAsset,
   });
 
   @override
@@ -1001,6 +1015,36 @@ class StoryPage extends StatelessWidget {
                         if (specialHeart) ...[
                           const PulsingHeart(size: 55),
                           const SizedBox(height: 15),
+                        ],
+
+                        if (photoAsset != null) ...[
+                          Container(
+                            width: 155,
+                            height: 155,
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: pink,
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      pink.withOpacity(0.35),
+                                  blurRadius: 25,
+                                  spreadRadius: 3,
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: Image.asset(
+                                photoAsset!,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
                         ],
 
                         if (number != null) ...[
